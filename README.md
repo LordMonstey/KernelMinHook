@@ -35,7 +35,8 @@ It is mainly meant as a technical study project and as a clean reference for low
 
 How to use it your code ! ( simple as minhook) :) 
 
-<img width="1695" height="458" alt="image" src="https://github.com/user-attachments/assets/0a270a43-213b-4871-b1d7-932d412811f7" />
+<img width="1513" height="450" alt="image" src="https://github.com/user-attachments/assets/c45fc58d-34db-4509-bbbf-aa1fa44b8545" />
+
 
 
 ---
