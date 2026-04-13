@@ -27,7 +27,8 @@ It is mainly meant as a technical study project and as a clean reference for low
 ---
 
 ## Architecture Diagram
-<img width="1735" height="1048" alt="image" src="https://github.com/user-attachments/assets/5927689f-7498-4dd0-81ad-d9d68a3d38da" />
+<img width="1726" height="1046" alt="image" src="https://github.com/user-attachments/assets/b91d86f3-d14a-4796-8463-90e7b7bdc5a1" />
+
 
 
 
