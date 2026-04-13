@@ -35,8 +35,9 @@ It is mainly meant as a technical study project and as a clean reference for low
 
 How to use it your code ! ( simple as minhook) :) 
 
-<img width="1513" height="450" alt="image" src="https://github.com/user-attachments/assets/c45fc58d-34db-4509-bbbf-aa1fa44b8545" />
+<img width="1519" height="446" alt="image" src="https://github.com/user-attachments/assets/fd2b1162-cd6b-4bc5-b106-61f80682fdaf" />
 
+Yes i've blurred the function im originally hooking.
 
 
 ---
