@@ -27,16 +27,13 @@ It is mainly meant as a technical study project and as a clean reference for low
 ---
 
 ## Architecture Diagram
+<img width="1809" height="1140" alt="image" src="https://github.com/user-attachments/assets/2c486b6d-d1c8-4f74-bbbe-2b4fdd72b7e6" />
 
-Placeholder for the project diagram.
 
-Export your draw.io diagram to:
+How to use it your code ! ( simple as minhook) :) 
 
-`docs/architecture.png`
+<img width="1695" height="458" alt="image" src="https://github.com/user-attachments/assets/0a270a43-213b-4871-b1d7-932d412811f7" />
 
-Then replace this section with:
-
-`![Architecture Diagram](docs/architecture.png)`
 
 ---
 
