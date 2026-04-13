@@ -27,7 +27,8 @@ It is mainly meant as a technical study project and as a clean reference for low
 ---
 
 ## Architecture Diagram
-<img width="1809" height="1140" alt="image" src="https://github.com/user-attachments/assets/2c486b6d-d1c8-4f74-bbbe-2b4fdd72b7e6" />
+<img width="1733" height="1048" alt="image" src="https://github.com/user-attachments/assets/ca0c92de-93c2-4c92-a9cd-399d966da414" />
+
 
 
 How to use it your code ! ( simple as minhook) :) 
