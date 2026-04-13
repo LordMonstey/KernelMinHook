@@ -1,288 +1,210 @@
-# KernelMinHook
+﻿# KernelMinHook
 
-KernelMinHook is a compact kernel-mode hooking library written in C, focused on trampoline generation, instruction relocation, executable code cave reuse, and MDL-backed patching on Windows.
+KernelMinHook is a small kernel-mode hooking library written in C.
 
-It is designed as a low-level systems project for studying how a minimal hook engine can be built in kernel space without unnecessary abstraction, while still covering the core mechanics required for real trampoline-based detouring.
+As the name suggests, the project was initially inspired by MinHook, but adapted here as a kernel-oriented implementation focused on lower-level behavior, trampoline building, code cave reuse, and protected patching.
+
+I built it as a low-level project to better understand how trampoline-based hooks work in kernel space: finding room for a relay, relocating overwritten instructions, patching protected code safely, and restoring the original bytes cleanly.
+
+The codebase is intentionally compact. The goal is not to build a huge framework, but to keep the core mechanics visible and easy to follow.
 
 ---
 
 ## Overview
 
-KernelMinHook provides a minimal hook manager for kernel-space targets, with support for:
+This project covers the main pieces of a minimal hook engine in kernel mode:
 
 - hook creation and removal
 - trampoline generation
 - prologue relocation
-- executable code cave discovery near the target function
-- controlled code patching through MDL-backed mappings
-- hook enable / disable at runtime
+- nearby code cave reuse
+- MDL-backed patching
+- runtime enable / disable
 - queued hook state application
-- compact internal storage using tagged NonPagedPool
 
-The project is intentionally small and focused.
-
-The goal is not to be a full framework, but to expose the internal mechanics of a low-level hook engine in a readable and reusable form.
+It is mainly meant as a technical study project and as a clean reference for low-level Windows internals work.
 
 ---
 
 ## Architecture Diagram
 
-Placeholder for the architecture diagram.
+Placeholder for the project diagram.
 
-Export your draw.io diagram later to:
+Export your draw.io diagram to:
 
-docs/architecture.png
+`docs/architecture.png`
 
 Then replace this section with:
 
-![Architecture Diagram](docs/architecture.png)
-
-Suggested blocks for the diagram:
-
-- target function
-- code cave scanner
-- trampoline builder
-- hook table
-- MDL patching path
-- detour handler
-- enable / disable lifecycle
+`![Architecture Diagram](docs/architecture.png)`
 
 ---
 
-## Core Features
+## How it works
 
-### Trampoline generation
-
-Builds relay trampolines for redirected execution while preserving the original control flow.
-
-### Instruction relocation
-
-Relocates overwritten prologue instructions into the trampoline, including branch rewriting and x64 RIP-relative fixups when needed.
-
-### Code cave reuse
-
-Searches for reusable executable padding near the target address instead of relying on a separate executable allocation strategy.
-
-### MDL-backed patching
-
-Uses an MDL workflow to obtain a controlled writable mapping before applying code patches.
-
-### Hook lifecycle management
-
-Supports:
-
-- initialize / uninitialize
-- create hook
-- remove hook
-- enable hook
-- disable hook
-- queue enable / disable
-- apply queued state
-
-### Compact internal storage
-
-Stores registered hooks in a lightweight dynamically managed table allocated from NonPagedPool with a dedicated pool tag.
-
----
-
-## How It Works
-
-KernelMinHook follows a simple pipeline:
+The flow is simple:
 
 1. initialize the hook manager
-2. register a target function and detour
-3. locate a reusable executable buffer near the target
-4. disassemble the target prologue
-5. relocate the overwritten instructions into a trampoline
-6. append the relay jump path
-7. patch the original target with a jump to the detour path
-8. enable, disable, restore, or remove the hook later as needed
+2. register a target function and a detour
+3. find a usable executable buffer near the target
+4. disassemble and relocate the overwritten instructions
+5. build a trampoline
+6. patch the target entry
+7. enable, disable, or remove the hook when needed
 
-This keeps the hook logic compact while still covering the critical pieces of a trampoline-based detour engine.
+The idea is to keep the implementation small while still covering the parts that actually matter in a trampoline-based detour system.
 
 ---
 
-## Project Structure
+## Project structure
 
 ### hook.c
 
-Main hook manager implementation.
-
-Responsibilities:
-
-- global initialization and shutdown
-- hook registration
-- lookup and removal
-- enable / disable logic
-- queued state application
-- backup and restoration of patched bytes
-- dynamic hook table management
-
-### buffer.c
-
-Executable buffer and code cave management.
-
-Responsibilities:
-
-- nearby page scanning
-- identifying reusable code cave regions
-- cave allocation tracking
-- cave release and reset
-- executable address validation
-
-### trampoline.c
-
-Instruction decoding and trampoline construction.
-
-Responsibilities:
-
-- disassembly-driven relocation
-- relative branch handling
-- x64 RIP-relative fixups
-- relay generation
-- patch-above fallback support
-- writing the generated trampoline into the selected executable buffer
-
-### hde/
-
-Embedded lightweight disassembler used during trampoline construction.
-
-### MinHook.h
-
-Public definitions, types, and exported API surface.
-
-### buffer.h / trampoline.h
-
-Internal interfaces for buffer and trampoline subsystems.
-
----
-
-## Implementation Notes
-
-### 1. Code cave scanning
-
-The buffer layer scans memory near the origin address and looks for continuous padding regions large enough to host a trampoline slot.
-
-Typical byte patterns considered reusable:
-
-- 0xCC
-- 0x90
-- 0x00
-
-This allows the trampoline to stay close to the patched target while avoiding a separate executable allocation path.
-
-### 2. MDL-backed writable mapping
-
-Instead of assuming direct writable access to code pages, the implementation uses an MDL workflow to map the memory in a controlled manner before patching.
-
-Typical flow:
-
-- IoAllocateMdl
-- MmProbeAndLockPages
-- MmMapLockedPagesSpecifyCache
-- MmProtectMdlSystemAddress
-
-This same pattern is used both for restoring and writing trampoline or patch bytes.
-
-### 3. Trampoline relocation logic
-
-The trampoline builder disassembles the original target instructions and copies them into a temporary trampoline buffer.
+This is the main hook manager.
 
 It handles:
 
-- direct jumps
-- short jumps
+- initialization and cleanup
+- hook registration
+- hook removal
+- enable / disable
+- queued state changes
+- backup and restoration of patched bytes
+- internal hook entry storage
+
+### buffer.c
+
+This file handles executable buffer reuse.
+
+It is responsible for:
+
+- scanning memory near the target
+- finding reusable code cave regions
+- tracking allocated trampoline slots
+- releasing and resetting used regions
+
+### trampoline.c
+
+This is where the trampoline is built.
+
+It handles:
+
+- instruction decoding
+- relocation of overwritten instructions
+- branch rewriting
+- x64 RIP-relative fixups
+- relay generation
+- patch-above fallback when the target prologue is too small
+
+### hde/
+
+This folder contains the lightweight disassembler used by the trampoline builder.
+
+---
+
+## Notes on the implementation
+
+### Code cave reuse
+
+Instead of relying on a separate executable allocation path, the library looks for nearby padding regions that can be reused as trampoline storage.
+
+Typical byte patterns include:
+
+- `0xCC`
+- `0x90`
+- `0x00`
+
+This keeps the trampoline close to the original target and keeps the implementation simple.
+
+### MDL-backed patching
+
+Patching is done through an MDL-based workflow using routines such as:
+
+- `IoAllocateMdl`
+- `MmProbeAndLockPages`
+- `MmMapLockedPagesSpecifyCache`
+- `MmProtectMdlSystemAddress`
+
+That gives a controlled writable mapping before writing patch bytes.
+
+### Trampoline relocation
+
+The trampoline builder copies the original instructions into a temporary buffer and fixes what needs to be fixed before writing the final relay.
+
+That includes:
+
 - relative calls
-- conditional jumps
-- x64 RIP-relative addressing adjustments
-- fallbacks when the patched prologue is too small
+- direct and short jumps
+- conditional branches
+- RIP-relative adjustments on x64
 
-### 4. Patch-above support
+### Patch-above support
 
-If the original target region is too small to safely host the patch directly, the implementation can fall back to a patch-above strategy when the surrounding bytes are suitable.
-
-### 5. Lightweight synchronization
-
-The hook manager uses a FAST_MUTEX to protect internal state during create / remove / enable / disable operations.
-
-### 6. Tagged pool usage
-
-Hook entries are stored using tagged NonPagedPool allocations for clearer tracking and cleaner lifecycle management.
+If the target prologue is too small to patch directly, the code can fall back to a patch-above strategy when the surrounding bytes allow it.
 
 ---
 
-## Design Goals
+## Compatibility
 
-KernelMinHook was built with a few clear objectives:
+This project has been tested and validated on Windows 10.
 
-- keep the implementation compact
-- make the hook pipeline easy to follow
-- avoid unnecessary framework overhead
-- stay close to the actual mechanics of trampoline patching
-- provide a useful reference project for low-level Windows development
-- expose instruction relocation logic in a readable way
+Windows 11 compatibility is not fully confirmed yet and may require additional validation depending on the target build and execution context.
 
 ---
 
-## Technical Highlights
+## Why I made this
+
+I wanted a minimal codebase that stays close to the actual mechanics of hooking, without hiding everything behind layers of abstraction.
+
+This project gave me a clean way to work on:
+
+- instruction relocation
+- trampoline layout
+- protected code patching
+- hook lifecycle management
+- low-level Windows systems internals
+
+---
+
+## Technical highlights
 
 - written in C
-- works at kernel level
-- uses code cave discovery for trampoline placement
-- supports x86 / x64 instruction handling
-- performs relocation-aware trampoline construction
-- uses MDL-backed patching for controlled writes
-- supports queued enable / disable operations
-- uses dynamically resized internal hook storage
-- preserves original bytes for restoration
+- kernel-mode oriented
+- inspired by MinHook
+- x86 / x64 support
+- trampoline-based redirection
+- relocation-aware patching
+- nearby executable buffer reuse
+- MDL-backed writes
+- compact internal hook table
+- tagged pool allocations
 
 ---
 
-## Current Limitations
+## Current limitations
 
-This repository is intentionally minimal and focused.
+This repository is intentionally small, so a few things are still minimal:
 
-Current limitations include:
+- status strings are not fully implemented
+- diagnostics are lightweight
+- some relocation edge cases could still be expanded
+- executable region validation stays simple on purpose
+- Windows 11 behavior still needs broader validation
 
-- no extended diagnostics or verbose tracing layer
-- no large abstraction layer or per-target policy engine
-- no advanced validation of section ownership beyond executable address reuse logic
-- no rich status string mapping yet
-- edge-case relocation handling can still be extended further
-
-These tradeoffs are intentional to keep the implementation compact and readable.
+That tradeoff keeps the project readable end to end.
 
 ---
 
-## Use Cases
+## Repository status
 
-KernelMinHook is useful as a low-level reference project for:
+KernelMinHook is mainly a technical showcase project.
 
-- studying kernel trampoline design
-- understanding instruction relocation
-- learning how hook engines manage original bytes and relay paths
-- experimenting with nearby executable buffer reuse
-- practicing MDL-backed kernel patch workflows
-- showcasing low-level Windows systems programming work
+It is meant to be small enough to read quickly, while still showing the real structure of a kernel trampoline hook engine.
 
----
+Planned improvements:
 
-## Repository Status
-
-KernelMinHook is a technical showcase project focused on:
-
-- kernel hook lifecycle design
-- low-level trampoline generation
-- instruction relocation
-- controlled patching
-- compact implementation choices
-
-It is meant to be small enough to read end-to-end while still exposing the core internals of a real hook engine.
-
-Planned improvements may include:
-
-- extended debug instrumentation
-- richer relocation diagnostics
-- more complete status string support
-- improved validation around executable region reuse
-- additional edge-case handling in trampoline generation
+- better diagnostics
+- fuller status reporting
+- more relocation edge-case coverage
+- cleaner validation around reusable executable regions
+- broader compatibility validation
