@@ -37,7 +37,7 @@ How to use it your code ! ( simple as minhook) :)
 
 <img width="1519" height="446" alt="image" src="https://github.com/user-attachments/assets/fd2b1162-cd6b-4bc5-b106-61f80682fdaf" />
 
-Yes i've blurred the export im originally hooking.
+Yes i've blurred the exported function im originally hooking.
 
 
 ---
