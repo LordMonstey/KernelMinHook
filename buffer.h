@@ -1,6 +1,6 @@
-﻿#pragma once
+#pragma once
 #include <ntifs.h>
-#include "MinHook.h"
+#include "KernelMinHook.h"
 
 #define MEMORY_SLOT_SIZE 64
 

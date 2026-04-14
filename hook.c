@@ -1,5 +1,5 @@
-﻿#include <ntifs.h>
-#include "MinHook.h"
+#include <ntifs.h>
+#include "KernelMinHook.h"
 #include "buffer.h"
 #include "trampoline.h"
 

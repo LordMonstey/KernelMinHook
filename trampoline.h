@@ -1,6 +1,6 @@
-﻿#pragma once
+#pragma once
 #include <ntifs.h>
-#include "MinHook.h"
+#include "KernelMinHook.h"
 
 #pragma pack(push, 1)
 
