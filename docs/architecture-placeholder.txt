@@ -1,2 +1,0 @@
-﻿Export your draw.io diagram here later as:
-docs/architecture.png
